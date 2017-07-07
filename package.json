@@ -1,0 +1,22 @@
+{
+  "name": "chimee-flv2fmp4",
+  "version": "0.1.0",
+  "description": "flv核心解码器",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://332065255@github.com/Chimeejs/chimee-flv2fmp4.git"
+  },
+  "author": "gaolingxiao@360.cn",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Chimeejs/chimee-flv2fmp4/issues"
+  },
+  "homepage": "https://github.com/Chimeejs/chimee-flv2fmp4#readme",
+  "dependencies": {
+    "chimee-helper": "^0.1.8"
+  }
+}

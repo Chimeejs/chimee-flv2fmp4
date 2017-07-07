@@ -18,6 +18,23 @@
   },
   "homepage": "https://github.com/Chimeejs/chimee-flv2fmp4#readme",
   "dependencies": {
-    "chimee-helper": "^0.1.8"
-  }
+    "chimee-helper": "^0.1.8",
+    "jest": "^20.0.4"
+  },
+  "jest": {
+      "modulePaths": [
+        "src"
+      ],
+      "moduleFileExtensions": [
+        "js"
+      ],
+      "moduleDirectories": [
+        "node_modules"
+      ],
+      "moduleNameMapper": {
+      },
+      "transform": {
+        ".*": "babel-jest"
+      }
+   }
 }

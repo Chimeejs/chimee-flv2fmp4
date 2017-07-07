@@ -1,2 +1,2 @@
-import cpu from './flv2fmp4.js';
+import cpu from './lib/flv2fmp4.js';
 export cpu;

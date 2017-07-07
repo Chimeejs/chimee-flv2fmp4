@@ -266,7 +266,7 @@ class flv2fmp4 {
  *
  * @class foreign
  */
-class foreign extends CustEvent {
+class CPU extends CustEvent {
     constructor(config) {
         super();
         this.f2m = new flv2fmp4(config);
@@ -360,5 +360,5 @@ class foreign extends CustEvent {
         this.f2m.seekCallBack = fun;
     }
 }
-
-export default foreign;
+module.exports=CPU;
+// export CPU;

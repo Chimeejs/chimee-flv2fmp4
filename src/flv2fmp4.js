@@ -3,7 +3,6 @@ import flvparse from './flv/flvParse';
 import tagdemux from './flv/tagdemux';
 import mp4remux from './mp4/mp4remux';
 import mp4moof from './mp4/mp4moof';
-import { CustEvent } from 'chimee-helper';
 class flv2fmp4 {
 
     /**
@@ -25,13 +24,15 @@ class flv2fmp4 {
 
         // 内部使用
         this.loadmetadata = false;
-        this.ftyp_moov = null;
+        this.ftyp_moov = null;//单路
+
+        this.ftyp_moov_v=null;//双路视频
+        this.ftyp_moov_a=null;//双路音频
         this.metaSuccRun = false;
         this.metas = [];
         this.parseChunk = null;
         this.hasVideo = false;
         this.hasAudio = false;
-        this._error=null;
         // 临时记录seek时间
         this._pendingResolveSeekPoint = -1;
 
@@ -44,7 +45,6 @@ class flv2fmp4 {
         tagdemux._onTrackMetadata = this.Metadata.bind(this);
         tagdemux._onMediaInfo = this.metaSucc.bind(this);
         tagdemux._onDataAvailable = this.onDataAvailable.bind(this);
-        tagdemux._onError=this.error.bind(this);
         this.m4mof = new mp4moof(this._config);
         this.m4mof.onMediaSegment = this.onMdiaSegment.bind(this);
     }
@@ -74,25 +74,20 @@ class flv2fmp4 {
      * @memberof flv2fmp4
      */
     setflvBasefrist(arraybuff, baseTime) {
-        let offset = 0;
-        try {
-            offset = flvparse.setFlv(new Uint8Array(arraybuff));
-        } catch (error) {
-            this.error(error);
-        }
 
+        let offset = flvparse.setFlv(new Uint8Array(arraybuff));
+        if(flvparse.arrTag.length==0)return offset;
+        if(flvparse.arrTag[0].type!=18){
+            if(this.error)this.error(new Error('without metadata tag'));
+        }
         if (flvparse.arrTag.length > 0) {
-            this.hasAudio = flvparse._hasAudio;
-            this.hasVideo = flvparse._hasVideo;
+            tagdemux.hasAudio=this.hasAudio = flvparse._hasAudio;
+            tagdemux.hasVideo=this.hasVideo = flvparse._hasVideo;
+            
             if (this._tempBaseTime != 0 && this._tempBaseTime == flvparse.arrTag[0].getTime()) {
                 tagdemux._timestampBase = 0;
             }
-            try {
-                tagdemux.moofTag(flvparse.arrTag);
-            } catch (error) {
-                this.error(error);
-            }
-
+            tagdemux.moofTag(flvparse.arrTag);
             this.setflvBase = this.setflvBaseUsually;
         }
 
@@ -109,18 +104,10 @@ class flv2fmp4 {
      * @memberof flv2fmp4
      */
     setflvBaseUsually(arraybuff, baseTime) {
-        let offset = 0;
-        try {
-            offset = flvparse.setFlv(new Uint8Array(arraybuff));
-        } catch (error) {
-            this.error(error);
-        }
+        const offset = flvparse.setFlv(new Uint8Array(arraybuff));
+
         if (flvparse.arrTag.length > 0) {
-            try {
-                tagdemux.moofTag(flvparse.arrTag);
-            } catch (error) {
-                this.error(error);
-            }
+            tagdemux.moofTag(flvparse.arrTag);
         }
 
         return offset;
@@ -138,7 +125,7 @@ class flv2fmp4 {
     onMdiaSegment(track, value) {
 
         if (this.onMediaSegment) {
-            this.onMediaSegment(new Uint8Array(value.data));
+            this.onMediaSegment(track,new Uint8Array(value.data));
         }
         if (this._pendingResolveSeekPoint != -1 && track == 'video') {
             let seekpoint = this._pendingResolveSeekPoint;
@@ -161,7 +148,7 @@ class flv2fmp4 {
     Metadata(type, meta) {
         switch (type) {
             case 'video':
-                this.metas.push(meta);
+                this.metas.push(['video',meta]);
                 this.m4mof._videoMeta = meta;
                 if (this.hasVideo && !this.hasAudio) {
                     this.metaSucc();
@@ -169,7 +156,7 @@ class flv2fmp4 {
                 }
                 break;
             case 'audio':
-                this.metas.push(meta);
+                this.metas.push(['audio',meta]);
                 this.m4mof._audioMeta = meta;
                 if (!this.hasVideo && this.hasAudio) {
                     this.metaSucc();
@@ -177,7 +164,7 @@ class flv2fmp4 {
                 }
                 break;
         }
-        if (this.hasVideo && this.hasAudio && this.metaSuccRun && this.metas.length > 1) {
+        if (this.hasVideo && this.hasAudio  && this.metas.length > 1) {
             this.metaSucc();
         }
     }
@@ -192,29 +179,41 @@ class flv2fmp4 {
      */
     metaSucc(mi) {
         if (this.onMediaInfo) {
-            this.onMediaInfo(mi, { hasAudio: this.hasAudio, hasVideo: this.hasVideo });
+            this.onMediaInfo(mi||tagdemux._mediaInfo, { hasAudio: this.hasAudio, hasVideo: this.hasVideo });
         }
         // 获取ftyp和moov
         if (this.metas.length == 0) {
             this.metaSuccRun = true;
             return;
         }
-
-        this.ftyp_moov = mp4remux.generateInitSegment(this.metas);
+        if(mi)return;
+        if(this.metas.length>1){
+            // this.ftyp_moov_v=
+            this.metas.map(item=>{
+                if(item[0]=='video'){
+                    this.ftyp_moov_v=mp4remux.generateInitSegment([item[1]]);
+                }else{
+                    this.ftyp_moov_a=mp4remux.generateInitSegment([item[1]]);
+                }
+            })
+        }else{
+            this.ftyp_moov = mp4remux.generateInitSegment([this.metas[0][1]]);
+        }
+        
         if (this.onInitSegment && this.loadmetadata == false) {
 
-            this.onInitSegment(this.ftyp_moov);
+            if(this.ftyp_moov)
+            {
+                this.onInitSegment(this.ftyp_moov);
+            }else{
+                this.onInitSegment(this.ftyp_moov_v,this.ftyp_moov_a);
+            }
             this.loadmetadata = true;
         }
     }
 
     onDataAvailable(audiotrack, videotrack) {
-        try{
-            this.m4mof.remux(audiotrack, videotrack);
-        }catch(e){
-            this.error(e);
-        }
-        
+        this.m4mof.remux(audiotrack, videotrack);
     }
 
     /**
@@ -245,20 +244,6 @@ class flv2fmp4 {
             return flvparse.arrTag;
         }
     }
-
-
-    /**
-     * 
-     *  异常抛出处理
-     * @param {any} e 
-     * @memberof flv2fmp4
-     */
-    error(e) {
-        if(this._error){
-            this._error(e);
-        }
-    }
-    
 }
 
 /**
@@ -266,11 +251,10 @@ class flv2fmp4 {
  *
  * @class foreign
  */
-class CPU extends CustEvent {
+class foreign {
     constructor(config) {
-        super();
+
         this.f2m = new flv2fmp4(config);
-        this.f2m._error=this.error;
         // 外部方法赋值
         this._onInitSegment = null;
         this._onMediaSegment = null;
@@ -278,9 +262,6 @@ class CPU extends CustEvent {
         this._seekCallBack = null;
     }
 
-    error(e){
-        this.emit('error',e.type);
-    }
     /**
      *
      * 跳转
@@ -360,5 +341,5 @@ class CPU extends CustEvent {
         this.f2m.seekCallBack = fun;
     }
 }
-module.exports=CPU;
-// export CPU;
+
+export default foreign;

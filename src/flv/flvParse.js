@@ -1,7 +1,6 @@
 /* eslint-disable */
 import tag from './flvTag.js';
 import tagdemux from './tagdemux';
-import error from '../utils/error'
 class FlvParse {
     constructor() {
         this.tempUint8 = new Uint8Array();
@@ -77,11 +76,6 @@ class FlvParse {
                 this.stop = true;
                 continue;
             }
-            if (t.tagType == 18 || t.tagType == 8 || t.tagType == 9) {
-
-            } else {
-                throw new error('wrong tagType' + t.tagType);
-            }
             if (this.tempUint8.length - this.index >= (this.getBodySum(t.dataSize) + 4)) {
                 t.body = this.read(this.getBodySum(t.dataSize)); // 取出body
                 if (t.tagType == 9 && this._hasVideo) {
@@ -90,10 +84,14 @@ class FlvParse {
                 if (t.tagType == 8 && this._hasAudio) {
                     this.arrTag.push(t);
                 }
-                if (t.tagType == 18) {
+                if (t.tagType == 18 ) {
+                    if(this.arrTag.length==0)
                     this.arrTag.push(t);
+                    else{
+                        console.log('这是截获的自定义数据',t);
+                    }
                 }
-                this.read(4);
+                t.size=this.read(4);
             } else {
                 this.stop = true;
                 continue;

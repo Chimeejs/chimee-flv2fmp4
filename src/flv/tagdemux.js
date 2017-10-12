@@ -2,7 +2,6 @@
 import flvDemux from './flvdemux';
 import mediainfo from './media-info';
 import SPSParser from './sps-parser';
-import error from './../utils/error'
 class tagDemux {
     constructor() {
         this.TAG = this.constructor.name;
@@ -44,7 +43,7 @@ class tagDemux {
         };
 
         this._videoTrack = { type: 'video', id: 1, sequenceNumber: 0, addcoefficient: 2, samples: [], length: 0 };
-        this._audioTrack = { type: 'audio', id: 2, sequenceNumber: 1, addcoefficient: 2, samples: [], length: 0 };
+        this._audioTrack = { type: 'audio', id: 2, sequenceNumber: 0, addcoefficient: 2, samples: [], length: 0 };
 
         this._littleEndian = (function() {
             const buf = new ArrayBuffer(2);
@@ -52,12 +51,19 @@ class tagDemux {
             return (new Int16Array(buf))[0] === 256; // platform-spec read, if equal then LE
         })();
     }
+    set hasAudio(s){
+        this._mediaInfo.hasAudio = this._hasAudio=s;
+    }
+    set hasVideo(s){
+        this._mediaInfo.hasVideo = this._hasVideo=s;
+    }
     onMediaInfo(callback) {
         this._onMediaInfo = callback;
     }
     parseMetadata(arr) {
         const data = flvDemux.parseMetadata(arr);
         this._parseScriptData(data);
+        console.log(this._mediaInfo, this._mediaInfo.isComplete());
     }
     _parseScriptData(obj) {
         const scriptData = obj;
@@ -184,7 +190,7 @@ class tagDemux {
 
     _parseVideoData(arrayBuffer, dataOffset, dataSize, tagTimestamp, tagPosition) {
         if (tagTimestamp == this._timestampBase && this._timestampBase != 0) {
-            throw new error(tagTimestamp+ this._timestampBase+'夭寿啦这个视频不是从0开始');
+            console.log(tagTimestamp, this._timestampBase, '夭寿啦这个视频不是从0开始');
             // this.timestampBase(0);
         }
         if (dataSize <= 1) {
@@ -199,8 +205,9 @@ class tagDemux {
         const codecId = spec & 15;
 
         if (codecId !== 7) {
-            throw new error(`Flv: Unsupported codec in video frame: ${codecId}`);
-            // return;
+            if(this._onError)
+            this._onError(`Flv: Unsupported codec in video frame: ${codecId}`);
+            return;
         }
 
         this._parseAVCVideoPacket(arrayBuffer, dataOffset + 1, dataSize - 1, tagTimestamp, tagPosition, frameType);
@@ -246,8 +253,8 @@ class tagDemux {
         } else if (packetType === 2) {
             // empty, AVC end of sequence
         } else {
-            throw new error(`Flv: Invalid video packet type ${packetType}`);
-            
+            this._onError(DemuxErrors.FORMAT_ERROR, `Flv: Invalid video packet type ${packetType}`);
+            return;
         }
     }
 
@@ -318,7 +325,7 @@ class tagDemux {
             meta.codecHeight = config.codec_size.height;
             meta.presentWidth = config.present_size.width;
             meta.presentHeight = config.present_size.height;
-            meta.config=config;
+
             meta.profile = config.profile_string;
             meta.level = config.level_string;
             meta.bitDepth = config.bit_depth;
@@ -357,7 +364,7 @@ class tagDemux {
             mi.sarNum = meta.sarRatio.width;
             mi.sarDen = meta.sarRatio.height;
             mi.videoCodec = codecString;
-            mi.meta=meta;
+
             if (mi.hasAudio) {
                 if (mi.audioCodec != null) {
                     mi.mimeType = 'video/x-flv; codecs="' + mi.videoCodec + ',' + mi.audioCodec + '"';

@@ -3,6 +3,8 @@ import flvparse from './flv/flvParse';
 import tagdemux from './flv/tagdemux';
 import mp4remux from './mp4/mp4remux';
 import mp4moof from './mp4/mp4moof';
+import { CustEvent } from 'chimee-helper';
+import Error from './utils/error'
 class flv2fmp4 {
 
     /**
@@ -287,9 +289,9 @@ class flv2fmp4 {
  *
  * @class foreign
  */
-class foreign {
+class foreign extends CustEvent {
     constructor(config) {
-
+        super();
         this.f2m = new flv2fmp4(config);
         this.f2m._error=this.error;
         // 外部方法赋值

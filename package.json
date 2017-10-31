@@ -1,8 +1,9 @@
 {
   "name": "chimee-flv2fmp4",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "flv核心解码器",
   "main": "lib/index.js",
+  "module": "lib/index_rollup.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "jest-flv": "jest flvdecode --coverage"

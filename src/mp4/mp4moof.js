@@ -304,15 +304,15 @@ class MP4Remuxer {
                 let frameCount = Math.ceil(delta / refSampleDuration);
                 let currentDts = dts + refSampleDuration;  // Notice: in float
 
-                console.log(this.TAG, 'Large audio timestamp gap detected, may cause AV sync to drift. ' +
-                                'Silent frames will be generated to avoid unsync.\n' +
-                                `dts: ${dts + sampleDuration} ms, expected: ${dts + Math.round(refSampleDuration)} ms, ` +
-                                `delta: ${Math.round(delta)} ms, generate: ${frameCount} frames`);
+                // console.log(this.TAG, 'Large audio timestamp gap detected, may cause AV sync to drift. ' +
+                //                 'Silent frames will be generated to avoid unsync.\n' +
+                //                 `dts: ${dts + sampleDuration} ms, expected: ${dts + Math.round(refSampleDuration)} ms, ` +
+                //                 `delta: ${Math.round(delta)} ms, generate: ${frameCount} frames`);
 
                 let silentUnit = AAC.getSilentFrame(this._audioMeta.originalCodec, this._audioMeta.channelCount);
                 if (silentUnit == null) {
-                    console.log(this.TAG, 'Unable to generate silent frame for ' +
-                                    `${this._audioMeta.originalCodec} with ${this._audioMeta.channelCount} channels, repeat last frame`);
+                    // console.log(this.TAG, 'Unable to generate silent frame for ' +
+                    //                 `${this._audioMeta.originalCodec} with ${this._audioMeta.channelCount} channels, repeat last frame`);
                     // Repeat last frame
                     silentUnit = unit;
                 }
@@ -407,7 +407,7 @@ class MP4Remuxer {
         // console.log(latest.dts,latest.originalDts);
         // lastDts = latest.originalDts + latest.duration;
         this._audioNextDts = lastDts;
-        console.log('dtsCorrection',dtsCorrection,'firstSampleOriginalDts',firstSampleOriginalDts,'_dtsBase',this._dtsBase,'this._audioNextDts',this._audioNextDts,'latest.dts',latest.dts,latest.originalDts)
+        // console.log('dtsCorrection',dtsCorrection,'firstSampleOriginalDts',firstSampleOriginalDts,'_dtsBase',this._dtsBase,'this._audioNextDts',this._audioNextDts,'latest.dts',latest.dts,latest.originalDts)
 
         // fill media segment info & add to info list
         let info = new MediaSegmentInfo();

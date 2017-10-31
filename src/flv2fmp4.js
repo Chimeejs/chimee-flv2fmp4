@@ -33,6 +33,7 @@ class flv2fmp4 {
         this.parseChunk = null;
         this.hasVideo = false;
         this.hasAudio = false;
+        this._error=null;
         // 临时记录seek时间
         this._pendingResolveSeekPoint = -1;
 
@@ -45,6 +46,7 @@ class flv2fmp4 {
         tagdemux._onTrackMetadata = this.Metadata.bind(this);
         tagdemux._onMediaInfo = this.metaSucc.bind(this);
         tagdemux._onDataAvailable = this.onDataAvailable.bind(this);
+        tagdemux._onError=this.error.bind(this);
         this.m4mof = new mp4moof(this._config);
         this.m4mof.onMediaSegment = this.onMdiaSegment.bind(this);
     }
@@ -75,7 +77,12 @@ class flv2fmp4 {
      */
     setflvBasefrist(arraybuff, baseTime) {
 
-        let offset = flvparse.setFlv(new Uint8Array(arraybuff));
+        let offset = 0;
+        try {
+            offset = flvparse.setFlv(new Uint8Array(arraybuff));
+        } catch (error) {
+            this.error(error);
+        }
         if(flvparse.arrTag.length==0)return offset;
         if(flvparse.arrTag[0].type!=18){
             if(this.error)this.error(new Error('without metadata tag'));
@@ -87,7 +94,11 @@ class flv2fmp4 {
             if (this._tempBaseTime != 0 && this._tempBaseTime == flvparse.arrTag[0].getTime()) {
                 tagdemux._timestampBase = 0;
             }
-            tagdemux.moofTag(flvparse.arrTag);
+            try {
+                tagdemux.moofTag(flvparse.arrTag);
+            } catch (error) {
+                this.error(error);
+            }
             this.setflvBase = this.setflvBaseUsually;
         }
 
@@ -104,10 +115,18 @@ class flv2fmp4 {
      * @memberof flv2fmp4
      */
     setflvBaseUsually(arraybuff, baseTime) {
-        const offset = flvparse.setFlv(new Uint8Array(arraybuff));
-
+        let offset =0;
+        try {
+            offset = flvparse.setFlv(new Uint8Array(arraybuff));
+        } catch (error) {
+            this.error(error);
+        }
         if (flvparse.arrTag.length > 0) {
-            tagdemux.moofTag(flvparse.arrTag);
+            try {
+                tagdemux.moofTag(flvparse.arrTag);
+            } catch (error) {
+                this.error(error);
+            }
         }
 
         return offset;
@@ -213,7 +232,13 @@ class flv2fmp4 {
     }
 
     onDataAvailable(audiotrack, videotrack) {
-        this.m4mof.remux(audiotrack, videotrack);
+        // this.m4mof.remux(audiotrack, videotrack);
+
+        try{
+            this.m4mof.remux(audiotrack, videotrack);
+        }catch(e){
+            this.error(e);
+        }
     }
 
     /**
@@ -244,6 +269,17 @@ class flv2fmp4 {
             return flvparse.arrTag;
         }
     }
+    /**
+     * 
+     *  异常抛出处理
+     * @param {any} e 
+     * @memberof flv2fmp4
+     */
+    error(e) {
+        if(this._error){
+            this._error(e);
+        }
+    }
 }
 
 /**
@@ -255,13 +291,16 @@ class foreign {
     constructor(config) {
 
         this.f2m = new flv2fmp4(config);
+        this.f2m._error=this.error;
         // 外部方法赋值
         this._onInitSegment = null;
         this._onMediaSegment = null;
         this._onMediaInfo = null;
         this._seekCallBack = null;
     }
-
+    error(e){
+        this.emit('error',e.type);
+    }
     /**
      *
      * 跳转

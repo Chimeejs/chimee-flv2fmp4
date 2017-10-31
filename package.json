@@ -1,6 +1,6 @@
 {
   "name": "chimee-flv2fmp4",
-  "version": "0.1.9",
+  "version": "0.1.11",
   "description": "flv核心解码器",
   "main": "lib/index.js",
   "module": "lib/index_rollup.js",

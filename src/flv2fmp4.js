@@ -46,10 +46,10 @@ class flv2fmp4 {
         // 处理flv数据入口
         this.setflvBase = this.setflvBasefrist;
 
-        tagdemux._onTrackMetadata = this.Metadata.bind(this);
-        tagdemux._onMediaInfo = this.metaSucc.bind(this);
-        tagdemux._onDataAvailable = this.onDataAvailable.bind(this);
-        tagdemux._onError=this.error.bind(this);
+        this._tagdemux._onTrackMetadata = this.Metadata.bind(this);
+        this._tagdemux._onMediaInfo = this.metaSucc.bind(this);
+        this._tagdemux._onDataAvailable = this.onDataAvailable.bind(this);
+        this._tagdemux._onError=this.error.bind(this);
         this.m4mof = new mp4moof(this._config);
         this.m4mof.onMediaSegment = this.onMdiaSegment.bind(this);
     }
@@ -61,7 +61,7 @@ class flv2fmp4 {
         }
         if (this._tempBaseTime != baseTime) {
             this._tempBaseTime = baseTime;
-            tagdemux._timestampBase = baseTime;
+            this._tagdemux._timestampBase = baseTime;
             this.m4mof.seek(baseTime);
             this.m4mof.insertDiscontinuity();
             this._pendingResolveSeekPoint = baseTime;
@@ -91,14 +91,14 @@ class flv2fmp4 {
             if(this.error)this.error(new Error('without metadata tag'));
         }
         if (this._flvparse.arrTag.length > 0) {
-            tagdemux.hasAudio=this.hasAudio = this._flvparse._hasAudio;
-            tagdemux.hasVideo=this.hasVideo = this._flvparse._hasVideo;
+            this._tagdemux.hasAudio=this.hasAudio = this._flvparse._hasAudio;
+            this._tagdemux.hasVideo=this.hasVideo = this._flvparse._hasVideo;
             
             if (this._tempBaseTime != 0 && this._tempBaseTime == this._flvparse.arrTag[0].getTime()) {
-                tagdemux._timestampBase = 0;
+                this._tagdemux._timestampBase = 0;
             }
             try {
-                tagdemux.moofTag(this._flvparse.arrTag);
+                this._tagdemux.moofTag(this._flvparse.arrTag);
             } catch (error) {
                 this.error(error);
             }
@@ -126,7 +126,7 @@ class flv2fmp4 {
         }
         if (this._flvparse.arrTag.length > 0) {
             try {
-                tagdemux.moofTag(this._flvparse.arrTag);
+                this._tagdemux.moofTag(this._flvparse.arrTag);
             } catch (error) {
                 this.error(error);
             }
@@ -201,7 +201,7 @@ class flv2fmp4 {
      */
     metaSucc(mi) {
         if (this.onMediaInfo) {
-            this.onMediaInfo(mi||tagdemux._mediaInfo, { hasAudio: this.hasAudio, hasVideo: this.hasVideo });
+            this.onMediaInfo(mi||this._tagdemux._mediaInfo, { hasAudio: this.hasAudio, hasVideo: this.hasVideo });
         }
         // 获取ftyp和moov
         if (this.metas.length == 0) {

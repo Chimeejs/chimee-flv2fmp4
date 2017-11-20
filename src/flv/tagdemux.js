@@ -3,7 +3,7 @@ import flvDemux from './flvdemux';
 import mediainfo from './media-info';
 import SPSParser from './sps-parser';
 import error from './../utils/error'
-class tagDemux {
+export default class tagDemux {
     constructor() {
         this.TAG = this.constructor.name;
 
@@ -732,4 +732,4 @@ class tagDemux {
         }
     }
 }
-export default new tagDemux();
+// export default new tagDemux();

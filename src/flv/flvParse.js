@@ -2,7 +2,7 @@
 import tag from './flvTag.js';
 import tagdemux from './tagdemux';
 import error from '../utils/error'
-class FlvParse {
+export default class FlvParse {
     constructor() {
         this.tempUint8 = new Uint8Array();
         this.arrTag = [];
@@ -126,4 +126,4 @@ class FlvParse {
         return parseInt(_str, 16);
     }
 }
-export default new FlvParse();
+ 

@@ -27,7 +27,8 @@ class flv2fmp4 {
         // 内部使用
         this.loadmetadata = false;
         this.ftyp_moov = null;//单路
-
+        this._tagdemux = new tagdemux();
+        this._flvparse = new flvparse();
         this.ftyp_moov_v=null;//双路视频
         this.ftyp_moov_a=null;//双路音频
         this.metaSuccRun = false;
@@ -81,23 +82,23 @@ class flv2fmp4 {
 
         let offset = 0;
         try {
-            offset = flvparse.setFlv(new Uint8Array(arraybuff));
+            offset = this._flvparse.setFlv(new Uint8Array(arraybuff));
         } catch (error) {
             this.error(error);
         }
-        if(flvparse.arrTag.length==0)return offset;
-        if(flvparse.arrTag[0].tagType!=18){
+        if(this._flvparse.arrTag.length==0)return offset;
+        if(this._flvparse.arrTag[0].tagType!=18){
             if(this.error)this.error(new Error('without metadata tag'));
         }
-        if (flvparse.arrTag.length > 0) {
-            tagdemux.hasAudio=this.hasAudio = flvparse._hasAudio;
-            tagdemux.hasVideo=this.hasVideo = flvparse._hasVideo;
+        if (this._flvparse.arrTag.length > 0) {
+            tagdemux.hasAudio=this.hasAudio = this._flvparse._hasAudio;
+            tagdemux.hasVideo=this.hasVideo = this._flvparse._hasVideo;
             
-            if (this._tempBaseTime != 0 && this._tempBaseTime == flvparse.arrTag[0].getTime()) {
+            if (this._tempBaseTime != 0 && this._tempBaseTime == this._flvparse.arrTag[0].getTime()) {
                 tagdemux._timestampBase = 0;
             }
             try {
-                tagdemux.moofTag(flvparse.arrTag);
+                tagdemux.moofTag(this._flvparse.arrTag);
             } catch (error) {
                 this.error(error);
             }
@@ -119,13 +120,13 @@ class flv2fmp4 {
     setflvBaseUsually(arraybuff, baseTime) {
         let offset =0;
         try {
-            offset = flvparse.setFlv(new Uint8Array(arraybuff));
+            offset = this._flvparse.setFlv(new Uint8Array(arraybuff));
         } catch (error) {
             this.error(error);
         }
-        if (flvparse.arrTag.length > 0) {
+        if (this._flvparse.arrTag.length > 0) {
             try {
-                tagdemux.moofTag(flvparse.arrTag);
+                tagdemux.moofTag(this._flvparse.arrTag);
             } catch (error) {
                 this.error(error);
             }

@@ -200,7 +200,7 @@ class flv2fmp4 {
      * @memberof flv2fmp4
      */
     metaSucc(mi) {
-        if (this.onMediaInfo) {
+        if (this.onMediaInfo&&mi) {
             this.onMediaInfo(mi||this._tagdemux._mediaInfo, { hasAudio: this.hasAudio, hasVideo: this.hasVideo });
         }
         // 获取ftyp和moov
@@ -294,7 +294,7 @@ class foreign extends CustEvent {
     constructor(config) {
         super();
         this.f2m = new flv2fmp4(config);
-        this.f2m._error=this.error;
+        this.f2m._error=this.error.bind(this);
         // 外部方法赋值
         this._onInitSegment = null;
         this._onMediaSegment = null;

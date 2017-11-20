@@ -1,6 +1,6 @@
 {
   "name": "chimee-flv2fmp4",
-  "version": "0.1.18",
+  "version": "0.1.19",
   "description": "flv核心解码器",
   "main": "lib/index.mjs",
   "scripts": {
@@ -29,6 +29,7 @@
     "babel-preset-flow": "^6.23.0",
     "babel-preset-stage-0": "^6.24.1",
     "chimee-helper": "^0.1.8",
+    "chimee-helper-events": "^0.1.0",
     "flow": "^0.2.3",
     "jest": "^20.0.4",
     "rollup": "^0.49.3",

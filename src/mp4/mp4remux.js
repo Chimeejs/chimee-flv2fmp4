@@ -669,6 +669,6 @@ class MP4 {
 
 }
 
-MP4.init();
+
 
 export default MP4;

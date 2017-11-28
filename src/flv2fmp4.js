@@ -15,6 +15,7 @@ class flv2fmp4 {
      * @memberof flv2fmp4
      */
     constructor(config) {
+        mp4remux.init();
         this._config = { _isLive: false };
         this._config = Object.assign(this._config, config);
 
@@ -54,6 +55,7 @@ class flv2fmp4 {
         this.m4mof.onMediaSegment = this.onMdiaSegment.bind(this);
     }
     seek(baseTime) {
+        this._flvparse.dispose();
         this.setflvBase = this.setflvBasefrist;
         if (baseTime == undefined || baseTime == 0) {
             baseTime = 0;
@@ -87,9 +89,9 @@ class flv2fmp4 {
             this.error(error);
         }
         if(this._flvparse.arrTag.length==0)return offset;
-        if(this._flvparse.arrTag[0].tagType!=18){
-            if(this.error)this.error(new Error('without metadata tag'));
-        }
+        // if(this._flvparse.arrTag[0].tagType!=18){
+        //     if(this.error)this.error(new Error('without metadata tag'));
+        // }
         if (this._flvparse.arrTag.length > 0) {
             this._tagdemux.hasAudio=this.hasAudio = this._flvparse._hasAudio;
             this._tagdemux.hasVideo=this.hasVideo = this._flvparse._hasVideo;
@@ -201,6 +203,7 @@ class flv2fmp4 {
      */
     metaSucc(mi) {
         if (this.onMediaInfo&&mi) {
+            
             this.onMediaInfo(mi||this._tagdemux._mediaInfo, { hasAudio: this.hasAudio, hasVideo: this.hasVideo });
         }
         // 获取ftyp和moov

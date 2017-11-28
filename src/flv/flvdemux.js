@@ -1,18 +1,14 @@
 /* eslint-disable */
 import decodeUTF8 from '../decodeUTF8';
 import SPSParser from './sps-parser';
-const le = (function() {
-    const buf = new ArrayBuffer(2);
-    (new DataView(buf)).setInt16(0, 256, true); // little-endian write
-    return (new Int16Array(buf))[0] === 256; // platform-spec read, if equal then LE
-})();
+var le=null;
 export default class flvDemux {
 
     constructor() {
 
     }
     static parseObject(arrayBuffer, dataOffset, dataSize) {
-
+        
         const name = flvDemux.parseString(arrayBuffer, dataOffset, dataSize);
         const value = flvDemux.parseScript(arrayBuffer, dataOffset + name.size);
         const isObjectEnd = value.objectEnd;
@@ -78,6 +74,11 @@ export default class flvDemux {
      * 解析metadata
      */
     static parseMetadata(arr) {
+        le = (function() {
+            const buf = new ArrayBuffer(2);
+            (new DataView(buf)).setInt16(0, 256, true); // little-endian write
+            return (new Int16Array(buf))[0] === 256; // platform-spec read, if equal then LE
+        })();
         const name = flvDemux.parseScript(arr, 0);
         const value = flvDemux.parseScript(arr, name.size, arr.length - name.size);
         // return {}

@@ -23,11 +23,6 @@ export default class FlvParse {
      */
     setFlv(uint8) {
         // this.stop = true;
-        console.log('写入数据');
-        if(this.busy){
-            // this.busyArr.push(uint8);
-            return 0;
-        }
         this.busy=true;
         this._dispose = false;
         this.stop = false;
@@ -41,23 +36,11 @@ export default class FlvParse {
             this.parse();
             this.frist = false;
             this.busy = false;
-            if(this._dispose){
-                console.log('循环中断了');
-                this.arrTag.length = 0;
-                return 0;
-            }
             return this.offset;
         } else if (!this.frist) {
             this.parse();
-            this.busy = false;
-            if(this._dispose){
-                console.log('循环中断了');
-                this.arrTag.length = 0;
-                return 0;
-            }
             return this.offset;
         } else {
-            this.busy = false;
             return this.offset;
         }
     }
@@ -84,11 +67,8 @@ export default class FlvParse {
         };
     }
     dispose(){
-        console.log('执行dispose');
-        this.stop=true;
-        this.arrTag = [];
-        this.index = 0;
-        this._dispose = true;
+        
+       
     }
     /**
      * 开始解析
@@ -135,11 +115,7 @@ export default class FlvParse {
             }
             this.offset = this.index;
         }
-        if(this._dispose){
-            console.log('循环中断了');
-            this.arrTag.length = 0;
-            return 0;
-        }
+        
         return this.offset;
     }
     read(length) {

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 /* eslint-disable */
-const Browser = {};
+var Browser = {};
 
 function detect() {
     // modified from jquery-browser-plugin

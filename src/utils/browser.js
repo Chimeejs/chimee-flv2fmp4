@@ -118,7 +118,8 @@ function detect() {
             delete Browser[key];
         }
     }
-    Object.assign(Browser, browser);
+    Browser=browser;
+    // Object.assign(Browser, browser);
 }
 
 detect();

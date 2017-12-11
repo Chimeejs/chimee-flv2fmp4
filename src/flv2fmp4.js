@@ -188,7 +188,7 @@ class flv2fmp4 {
                 }
                 break;
         }
-        if (this.hasVideo && this.hasAudio  && this.metas.length > 1) {
+        if (this.hasVideo && this.hasAudio  && this.m4mof._videoMeta && this.m4mof._audioMeta) {
             this.metaSucc();
         }
     }

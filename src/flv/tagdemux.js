@@ -568,7 +568,7 @@ export default class tagDemux {
             }
             // then notify new metadata
             this._dispatch = false;
-            this._onTrackMetadata('audio', meta);
+            
 
             const mi = this._mediaInfo;
             mi.audioCodec = 'mp4a.40.' + misc.originalAudioObjectType;
@@ -581,6 +581,7 @@ export default class tagDemux {
             } else {
                 mi.mimeType = 'video/x-flv; codecs="' + mi.audioCodec + '"';
             }
+            this._onTrackMetadata('audio', meta);
             if (mi.isComplete()) {
                 this._onMediaInfo(mi);
             }

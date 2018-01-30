@@ -17,7 +17,7 @@ class flv2fmp4 {
     constructor(config) {
         mp4remux.init();
         this._config = { _isLive: false };
-        this._config = config
+        Object.assign(this._config, config);
 
         // 外部方法赋值
         this.onInitSegment = null;

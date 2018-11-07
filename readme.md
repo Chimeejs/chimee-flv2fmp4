@@ -8,6 +8,9 @@ var cpu= require("chimee-flv2fmp4")
 new cpu();
 ```
 -----------------
+
+[![Greenkeeper badge](https://badges.greenkeeper.io/Chimeejs/chimee-flv2fmp4.svg)](https://greenkeeper.io/)
+
 # Doc
 ## function
 * setflv(arraybuffer) 参数,arraybuffer数组,返回值是该数值用到的位置
